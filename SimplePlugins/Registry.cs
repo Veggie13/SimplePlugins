@@ -9,7 +9,6 @@ namespace SimplePlugins
     {
         public interface IFactory
         {
-            Type ExportedType { get; }
             T Create(IDictionary<string, object> parms);
         }
 
@@ -27,7 +26,7 @@ namespace SimplePlugins
             foreach (var factoryType in factories)
             {
                 IFactory factory = (IFactory)factoryType.GetConstructor(new Type[0]).Invoke(new object[0]);
-                Register(factory.ExportedType, factory);
+                Register(factoryType.Get<FactoryAttribute>().Name, factory);
             }
         }
 
@@ -36,9 +35,9 @@ namespace SimplePlugins
             get { return _register.Keys; }
         }
 
-        private static void Register(Type type, IFactory factory)
+        private static void Register(string name, IFactory factory)
         {
-            _register[type.FullName] = factory;
+            _register[name] = factory;
         }
     }
 }

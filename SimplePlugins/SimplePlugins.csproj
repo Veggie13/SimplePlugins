@@ -43,7 +43,6 @@
     <Compile Include="FactoryAttribute.cs" />
     <Compile Include="Registry.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Factory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

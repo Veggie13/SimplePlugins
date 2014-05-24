@@ -5,39 +5,50 @@ using System.Text;
 
 namespace SimplePlugins
 {
-    public static class Registry<T>
+    public class Registry<T>
     {
+        #region Types
         public interface IFactory
         {
             T Create(IDictionary<string, object> parms);
         }
+        #endregion
 
-        private static Dictionary<string, IFactory> _register = new Dictionary<string, IFactory>();
+        #region Class Members
+        private Dictionary<string, Tuple<ImportInfo, IFactory>> _register = new Dictionary<string, Tuple<ImportInfo, IFactory>>();
+        #endregion
 
-        public static T Create(string name, IDictionary<string, object> parms)
+        #region Properties
+        public IEnumerable<ImportInfo> ImportedTypes
         {
-            return _register[name].Create(parms);
+            get { return _register.Values.Select(t => t.Item1); }
+        }
+        #endregion
+
+        #region Public Methods
+        public T Create(string name, IDictionary<string, object> parms)
+        {
+            return _register[name].Item2.Create(parms);
         }
 
-        public static void Import(string path)
+        public void Import(string path)
         {
             var pluginModule = System.Reflection.Assembly.LoadFile(path);
             var factories = pluginModule.TypesWith<FactoryAttribute>().Where(t => typeof(IFactory).IsAssignableFrom(t));
             foreach (var factoryType in factories)
             {
-                IFactory factory = (IFactory)factoryType.GetConstructor(new Type[0]).Invoke(new object[0]);
-                Register(factoryType.Get<FactoryAttribute>().Name, factory);
+                register(factoryType);
             }
         }
+        #endregion
 
-        public static IEnumerable<string> ImportedTypes
+        #region Private Helpers
+        private void register(Type factoryType)
         {
-            get { return _register.Keys; }
+            var attr = factoryType.Get<FactoryAttribute>();
+            var factory = factoryType.Instantiate<IFactory>();
+            _register[attr.Name] = new Tuple<ImportInfo,IFactory>(new ImportInfo(attr.Name, attr.Description, factoryType.Assembly), factory);
         }
-
-        private static void Register(string name, IFactory factory)
-        {
-            _register[name] = factory;
-        }
+        #endregion
     }
 }

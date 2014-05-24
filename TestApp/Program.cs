@@ -14,15 +14,17 @@ namespace TestApp
 
         static void Main(string[] args)
         {
+            var registry = new BaseRegistry();
+
             var exeInfo = new FileInfo(Assembly.GetEntryAssembly().Location);
             string importPath = Path.Combine(exeInfo.Directory.FullName, @"..\..\..\TestPlugin1\bin\Debug\TestPlugin1.dll");
-            BaseRegistry.Import(importPath);
+            registry.Import(importPath);
 
             var dict = new Dictionary<string, object>();
-            foreach (string type in BaseRegistry.ImportedTypes)
+            foreach (var info in registry.ImportedTypes)
             {
-                var item = BaseRegistry.Create(type, dict);
-                Console.WriteLine("{0}: {1}", type, item.Name);
+                var item = registry.Create(info.Name, dict);
+                Console.WriteLine("{0}: {1}", info.Name, item.Name);
             }
             
             Console.WriteLine("Done!");

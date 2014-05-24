@@ -28,5 +28,10 @@ namespace SimplePlugins
                 return default(AT);
             return (AT)type.GetCustomAttributes(typeof(AT), true)[0];
         }
+
+        public static T Instantiate<T>(this Type type)
+        {
+            return (T)type.GetConstructor(new Type[0]).Invoke(new object[0]);
+        }
     }
 }

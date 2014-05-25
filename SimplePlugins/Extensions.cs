@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using System;
+using System.Linq;
 
 namespace SimplePlugins
 {
@@ -29,9 +30,47 @@ namespace SimplePlugins
             return (AT)type.GetCustomAttributes(typeof(AT), true)[0];
         }
 
+        public static object Instantiate(this Type type)
+        {
+            return type.GetConstructor(new Type[0]).Invoke(new object[0]);
+        }
+        
         public static T Instantiate<T>(this Type type)
         {
-            return (T)type.GetConstructor(new Type[0]).Invoke(new object[0]);
+            if (!typeof(T).IsAssignableFrom(type))
+                throw new InvalidCastException("Cannot instantiate type as T.");
+            return (T)type.Instantiate();
+        }
+
+        public static bool HasInterface(this Type type, Type baseInterface)
+        {
+            if (!baseInterface.IsInterface)
+                return false;
+
+            Type[] interfaces = type.GetInterfaces();
+
+            if (baseInterface.IsGenericTypeDefinition)
+            {
+                return interfaces.Where(t => t.IsGenericType)
+                    .Select(t => t.GetGenericTypeDefinition())
+                    .Contains(baseInterface);
+            }
+            else
+            {
+                return interfaces.Contains(baseInterface);
+            }
+        }
+
+        public static Type FromDefinition(this Type type, Type definition)
+        {
+            if (!definition.IsGenericTypeDefinition)
+            {
+                throw new ArgumentException("definition must be a Generic Type Definition");
+            }
+
+            Type[] interfaces = type.GetInterfaces();
+
+            return interfaces.First(t => t.IsGenericType && t.GetGenericTypeDefinition().Equals(definition));
         }
     }
 }

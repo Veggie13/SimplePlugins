@@ -4,26 +4,32 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Reflection;
+using TestPlatform;
 
 namespace TestApp
 {
-    using BaseRegistry = SimplePlugins.Registry<TestPlatform.IBase>;
-
     class Program
     {
-
         static void Main(string[] args)
         {
-            var registry = new BaseRegistry();
+            var registry = new SimplePlugins.Registry();
 
             var exeInfo = new FileInfo(Assembly.GetEntryAssembly().Location);
-            string importPath = Path.Combine(exeInfo.Directory.FullName, @"..\..\..\TestPlugin1\bin\Debug\TestPlugin1.dll");
-            registry.Import(importPath);
+            string importPath = Path.Combine(exeInfo.Directory.FullName, @"TestPlugin1.dll");
+            registry.Load(importPath);
 
             var dict = new Dictionary<string, object>();
-            foreach (var info in registry.ImportedTypes)
+            Console.WriteLine("IBase1");
+            foreach (var info in registry.GetImportedTypes<IBase1>())
             {
-                var item = registry.Create(info.Name, dict);
+                var item = registry.Create<IBase1>(info.Name, dict);
+                Console.WriteLine("{0}: {1}", info.Name, item.Name);
+            }
+
+            Console.WriteLine("IBase2");
+            foreach (var info in registry.GetImportedTypes<IBase2>())
+            {
+                var item = registry.Create<IBase2>(info.Name, dict);
                 Console.WriteLine("{0}: {1}", info.Name, item.Name);
             }
             

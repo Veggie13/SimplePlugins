@@ -5,49 +5,62 @@ using System.Text;
 
 namespace SimplePlugins
 {
-    public class Registry<T>
+    public class Registry
     {
-        #region Types
-        public interface IFactory
-        {
-            T Create(IDictionary<string, object> parms);
-        }
-        #endregion
-
         #region Class Members
-        private Dictionary<string, Tuple<ImportInfo, IFactory>> _register = new Dictionary<string, Tuple<ImportInfo, IFactory>>();
+        private Dictionary<Type, ITypeRegistry> _registries = new Dictionary<Type, ITypeRegistry>();
         #endregion
 
         #region Properties
-        public IEnumerable<ImportInfo> ImportedTypes
+        public IEnumerable<Type> RegisteredTypes
         {
-            get { return _register.Values.Select(t => t.Item1); }
+            get { return _registries.Keys; }
+        }
+
+        public IEnumerable<ITypeRegistry> TypeRegistries
+        {
+            get { return _registries.Values; }
+        }
+
+        public ITypeRegistry this[Type type]
+        {
+            get { return _registries[type]; }
         }
         #endregion
 
         #region Public Methods
-        public T Create(string name, IDictionary<string, object> parms)
+        public TypeRegistry<T> GetTypeRegistry<T>()
         {
-            return _register[name].Item2.Create(parms);
+            return (TypeRegistry<T>)_registries[typeof(T)];
         }
 
-        public void Import(string path)
+        public IEnumerable<ImportInfo> GetImportedTypes<T>()
+        {
+            return GetTypeRegistry<T>().ImportedTypes;
+        }
+
+        public T Create<T>(string name, IDictionary<string, object> parms)
+        {
+            var registry = (TypeRegistry<T>)_registries[typeof(T)];
+            return registry.Create(name, parms);
+        }
+
+        public void Load(string path)
         {
             var pluginModule = System.Reflection.Assembly.LoadFile(path);
-            var factories = pluginModule.TypesWith<FactoryAttribute>().Where(t => typeof(IFactory).IsAssignableFrom(t));
-            foreach (var factoryType in factories)
+            var factoryTypes = pluginModule.TypesWith<FactoryAttribute>().Where(t => t.HasInterface(typeof(TypeRegistry<>.IFactory)));
+            foreach (var factoryType in factoryTypes)
             {
-                register(factoryType);
+                Type factoryInterface = factoryType.FromDefinition(typeof(TypeRegistry<>.IFactory));
+                Type factoryTarget = factoryInterface.GetGenericArguments()[0];
+                Type registryType = typeof(TypeRegistry<>).MakeGenericType(factoryTarget);
+                if (!_registries.ContainsKey(factoryTarget))
+                {
+                    var registry = registryType.Instantiate<ITypeRegistry>();
+                    _registries[factoryTarget] = registry;
+                    registry.Import(path);
+                }
             }
-        }
-        #endregion
-
-        #region Private Helpers
-        private void register(Type factoryType)
-        {
-            var attr = factoryType.Get<FactoryAttribute>();
-            var factory = factoryType.Instantiate<IFactory>();
-            _register[attr.Name] = new Tuple<ImportInfo,IFactory>(new ImportInfo(attr.Name, attr.Description, factoryType.Assembly), factory);
         }
         #endregion
     }

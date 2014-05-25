@@ -15,8 +15,8 @@ namespace TestApp
             var registry = new SimplePlugins.Registry();
 
             var exeInfo = new FileInfo(Assembly.GetEntryAssembly().Location);
-            string importPath = Path.Combine(exeInfo.Directory.FullName, @"TestPlugin1.dll");
-            registry.Load(importPath);
+            string dirPath = Path.Combine(exeInfo.Directory.FullName, "Plugins");
+            registry.LoadDirectory(dirPath);
 
             var dict = new Dictionary<string, object>();
             Console.WriteLine("IBase1");

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace SimplePlugins
 {
@@ -58,8 +59,18 @@ namespace SimplePlugins
                 {
                     var registry = registryType.Instantiate<ITypeRegistry>();
                     _registries[factoryTarget] = registry;
-                    registry.Import(path);
                 }
+                _registries[factoryTarget].Import(path);
+            }
+        }
+
+        public void LoadDirectory(string path, bool recursive = false)
+        {
+            var dirInfo = new DirectoryInfo(path);
+
+            foreach (var fileInfo in dirInfo.GetFiles("*.dll", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
+            {
+                Load(fileInfo.FullName);
             }
         }
         #endregion

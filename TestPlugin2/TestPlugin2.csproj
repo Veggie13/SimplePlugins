@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{B45B9801-6D78-49AE-9812-3BD81AC2A359}</ProjectGuid>
+    <ProjectGuid>{6B53CEB6-AF8C-45EA-A597-8C1D7F565436}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TestPlugin1</RootNamespace>
-    <AssemblyName>TestPlugin1</AssemblyName>
+    <RootNamespace>TestPlugin2</RootNamespace>
+    <AssemblyName>TestPlugin2</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
@@ -39,9 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
-    <Compile Include="Class2.cs" />
-    <Compile Include="Class3.cs" />
+    <Compile Include="Class4.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

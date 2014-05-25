@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace SimplePlugins
 {
@@ -8,6 +9,7 @@ namespace SimplePlugins
     {
         IEnumerable<ImportInfo> ImportedTypes { get; }
         void Import(string path);
+        void Load(Assembly assembly);
     }
 
     public class TypeRegistry<T> : ITypeRegistry
@@ -39,7 +41,12 @@ namespace SimplePlugins
         public void Import(string path)
         {
             var pluginModule = System.Reflection.Assembly.LoadFile(path);
-            var factoryTypes = pluginModule.TypesWith<FactoryAttribute>().Where(t => typeof(IFactory).IsAssignableFrom(t));
+            Load(pluginModule);
+        }
+
+        public void Load(Assembly assembly)
+        {
+            var factoryTypes = assembly.TypesWith<FactoryAttribute>().Where(t => typeof(IFactory).IsAssignableFrom(t));
             foreach (var factoryType in factoryTypes)
             {
                 register(factoryType);

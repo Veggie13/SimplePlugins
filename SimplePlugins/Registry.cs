@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Reflection;
 
 namespace SimplePlugins
 {
@@ -46,9 +47,8 @@ namespace SimplePlugins
             return registry.Create(name, parms);
         }
 
-        public void Load(string path)
+        public void Load(Assembly pluginModule)
         {
-            var pluginModule = System.Reflection.Assembly.LoadFile(path);
             var factoryTypes = pluginModule.TypesWith<FactoryAttribute>().Where(t => t.HasInterface(typeof(TypeRegistry<>.IFactory)));
             foreach (var factoryType in factoryTypes)
             {
@@ -60,8 +60,14 @@ namespace SimplePlugins
                     var registry = registryType.Instantiate<ITypeRegistry>();
                     _registries[factoryTarget] = registry;
                 }
-                _registries[factoryTarget].Import(path);
+                _registries[factoryTarget].Load(pluginModule);
             }
+        }
+
+        public void Load(string path)
+        {
+            var pluginModule = System.Reflection.Assembly.LoadFile(path);
+            Load(pluginModule);
         }
 
         public void LoadDirectory(string path, bool recursive = false)
